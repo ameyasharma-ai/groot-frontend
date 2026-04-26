@@ -77,7 +77,7 @@ const MathematicalSphere = ({ analyserRef, dataArrayRef, isPlayingRef }) => {
       if (analyserRef.current && dataArrayRef.current && isPlayingRef.current) {
         analyserRef.current.getByteFrequencyData(dataArrayRef.current);
         let sum = 0;
-        for(let i=0; i<dataArrayRef.current.length; i++) sum += dataArrayRef.current[i];
+        for (let i = 0; i < dataArrayRef.current.length; i++) sum += dataArrayRef.current[i];
         avg = sum / dataArrayRef.current.length;
       }
 
@@ -97,7 +97,7 @@ const MathematicalSphere = ({ analyserRef, dataArrayRef, isPlayingRef }) => {
       // Optional: draw central glowing core if speaking loudly
       if (avg > 20) {
         const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r);
-        gradient.addColorStop(0, `rgba(0, 250, 101, ${avg/255 * 0.3})`);
+        gradient.addColorStop(0, `rgba(0, 250, 101, ${avg / 255 * 0.3})`);
         gradient.addColorStop(1, 'rgba(0, 250, 101, 0)');
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -110,11 +110,11 @@ const MathematicalSphere = ({ analyserRef, dataArrayRef, isPlayingRef }) => {
         // Rotate X
         let y1 = p.y * Math.cos(rotationX) - p.z * Math.sin(rotationX);
         let z1 = p.y * Math.sin(rotationX) + p.z * Math.cos(rotationX);
-        
+
         // Rotate Y
         let x2 = p.x * Math.cos(rotationY) + z1 * Math.sin(rotationY);
         let z2 = -p.x * Math.sin(rotationY) + z1 * Math.cos(rotationY);
-        
+
         // 3D Perspective Projection
         const perspective = 300 / (300 - z2 * r);
         const px = centerX + x2 * r * perspective;
@@ -127,7 +127,7 @@ const MathematicalSphere = ({ analyserRef, dataArrayRef, isPlayingRef }) => {
         const size = Math.max(0.5, 2 * perspective);
 
         const glow = Math.floor(avg / 2);
-        ctx.fillStyle = `rgba(${0 + glow}, ${250 - glow/2}, ${101 + glow}, ${alpha})`;
+        ctx.fillStyle = `rgba(${0 + glow}, ${250 - glow / 2}, ${101 + glow}, ${alpha})`;
 
         ctx.beginPath();
         ctx.arc(px, py, size, 0, 2 * Math.PI);
@@ -192,9 +192,9 @@ function App() {
   const mediaRecorder = useRef(null);
   const audioChunks = useRef([]);
   const isRecordingRef = useRef(false);
-  const pendingRecordingRef = useRef(false); 
+  const pendingRecordingRef = useRef(false);
   const abortRecordingRef = useRef(false);
-  
+
   // Audio Playback
   const audioQueue = useRef([]);
   const isPlaying = useRef(false);
@@ -243,7 +243,7 @@ function App() {
       wsUrl = `${protocol}//${window.location.hostname}:8000/ws/chat`;
     }
     ws.current = new WebSocket(wsUrl);
-    
+
     ws.current.onopen = () => {
       setWsStatus('connected');
       ws.current.send(JSON.stringify({ type: 'set_voice', voice_id: activeVoice.id, system_prompt: systemPrompt }));
@@ -287,17 +287,17 @@ function App() {
     if (!audioContext.current) audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioContext.current.createOscillator();
     const gainNode = audioContext.current.createGain();
-    
+
     osc.type = 'square';
     osc.frequency.setValueAtTime(800, audioContext.current.currentTime);
     osc.frequency.exponentialRampToValueAtTime(1200, audioContext.current.currentTime + 0.1);
-    
+
     gainNode.gain.setValueAtTime(0.1, audioContext.current.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.current.currentTime + 0.1);
-    
+
     osc.connect(gainNode);
     gainNode.connect(audioContext.current.destination);
-    
+
     osc.start();
     osc.stop(audioContext.current.currentTime + 0.1);
   };
@@ -307,7 +307,7 @@ function App() {
       console.warn("Speech recognition not supported in this browser. Use Chrome/Edge.");
       return;
     }
-    
+
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognitionRef.current = new SpeechRecognition();
     recognitionRef.current.continuous = true;
@@ -319,11 +319,11 @@ function App() {
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         transcript += event.results[i][0].transcript.toLowerCase();
       }
-      
+
       if (transcript.includes('hey lisa') || transcript.includes('hay lisa')) {
         console.log("Wake word detected!");
         recognitionRef.current.stop();
-        cancelSpeech(); 
+        cancelSpeech();
         startRecording(true);
       }
     };
@@ -334,11 +334,11 @@ function App() {
 
     recognitionRef.current.onend = () => {
       if (!isRecordingRef.current) {
-        try { recognitionRef.current.start(); } catch(e){}
+        try { recognitionRef.current.start(); } catch (e) { }
       }
     };
 
-    try { recognitionRef.current.start(); } catch(e){}
+    try { recognitionRef.current.start(); } catch (e) { }
   };
 
   const base64ToArrayBuffer = (base64) => {
@@ -356,14 +356,14 @@ function App() {
       isPlaying.current = false;
       if (shouldAutoListen.current) {
         shouldAutoListen.current = false;
-        startRecording(true); 
+        startRecording(true);
       } else {
         setActionStatus('IDLE');
         setSubtitle(prev => ({ ...prev })); // keep the text on screen
       }
       return;
     }
-    
+
     isPlaying.current = true;
     const nextItem = audioQueue.current.shift();
     if (nextItem.text) {
@@ -372,8 +372,13 @@ function App() {
         return { role: 'ai', text: nextItem.text };
       });
     }
+    if (!nextItem.audio) {
+      setTimeout(() => playNextAudio(), 100);
+      return;
+    }
+
     const arrayBuffer = base64ToArrayBuffer(nextItem.audio);
-    
+
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -386,39 +391,40 @@ function App() {
       analyser.current.fftSize = 256;
       dataArray.current = new Uint8Array(analyser.current.frequencyBinCount);
     }
-    
+
     try {
       const audioBuffer = await audioContext.current.decodeAudioData(arrayBuffer);
       const source = audioContext.current.createBufferSource();
       source.buffer = audioBuffer;
       source.connect(analyser.current);
       analyser.current.connect(audioContext.current.destination);
-      
+
       activeSourceNode.current = source;
-      
+
       source.onended = () => {
         activeSourceNode.current = null;
         setTimeout(() => playNextAudio(), 200);
       };
-      
+
       source.start(0);
     } catch (e) {
       console.error("Audio Decode Error:", e);
+      alert("Browser Audio Blocked: " + e.message);
       playNextAudio();
     }
   };
 
   const startRecording = async (useAutoVAD = false) => {
-    if (isRecordingRef.current || pendingRecordingRef.current) return; 
+    if (isRecordingRef.current || pendingRecordingRef.current) return;
     pendingRecordingRef.current = true;
 
     if (!audioContext.current) audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
     try {
       if (audioContext.current.state === 'suspended') await audioContext.current.resume();
-    } catch(e) { console.warn("AudioContext resume blocked:", e); }
+    } catch (e) { console.warn("AudioContext resume blocked:", e); }
 
-    cancelSpeech(false); 
-    abortRecordingRef.current = false; 
+    cancelSpeech(false);
+    abortRecordingRef.current = false;
 
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -427,9 +433,9 @@ function App() {
         setSubtitle({ role: 'system', text: 'MIC ACCESS BLOCKED BY BROWSER (REQUIRES HTTPS)' });
         return;
       }
-      
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
+
       micStreamRef.current = stream;
       mediaRecorder.current = new MediaRecorder(stream, { mimeType: 'audio/webm' });
       audioChunks.current = [];
@@ -446,13 +452,13 @@ function App() {
             ws.current.send(audioBlob);
           }
         }
-        
+
         if (micStreamRef.current) micStreamRef.current.getTracks().forEach(t => t.stop());
-        
+
         if (recognitionRef.current) {
-          setTimeout(() => { try { recognitionRef.current.start(); } catch(e){} }, 1000);
+          setTimeout(() => { try { recognitionRef.current.start(); } catch (e) { } }, 1000);
         }
-        
+
         isRecordingRef.current = false;
         pendingRecordingRef.current = false;
         setIsRecording(false);
@@ -469,22 +475,22 @@ function App() {
         vadAnalyserRef.current = audioContext.current.createAnalyser();
         vadAnalyserRef.current.fftSize = 256;
         source.connect(vadAnalyserRef.current);
-        
+
         const vadData = new Uint8Array(vadAnalyserRef.current.frequencyBinCount);
         silenceStartRef.current = null;
 
         vadIntervalRef.current = setInterval(() => {
           vadAnalyserRef.current.getByteFrequencyData(vadData);
           let maxVal = 0;
-          for(let i=0; i<vadData.length; i++) {
+          for (let i = 0; i < vadData.length; i++) {
             if (vadData[i] > maxVal) maxVal = vadData[i];
           }
 
-          if (maxVal > 50) { 
+          if (maxVal > 50) {
             silenceStartRef.current = null;
           } else {
             if (!silenceStartRef.current) silenceStartRef.current = Date.now();
-            else if (Date.now() - silenceStartRef.current > 1500) { 
+            else if (Date.now() - silenceStartRef.current > 1500) {
               clearInterval(vadIntervalRef.current);
               stopRecording();
             }
@@ -511,20 +517,20 @@ function App() {
 
   const cancelSpeech = (callStopRecording = true) => {
     if (activeSourceNode.current) {
-      try { activeSourceNode.current.stop(); } catch(e){}
+      try { activeSourceNode.current.stop(); } catch (e) { }
       activeSourceNode.current = null;
     }
     audioQueue.current = [];
     isPlaying.current = false;
-    shouldAutoListen.current = false; 
+    shouldAutoListen.current = false;
     setSubtitle({ role: 'system', text: 'STREAM INTERRUPTED.' });
-    
+
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ type: 'interrupt' }));
     }
-    
+
     if (callStopRecording && isRecordingRef.current) {
-      abortRecordingRef.current = true; 
+      abortRecordingRef.current = true;
       stopRecording();
     }
   };
@@ -542,15 +548,15 @@ function App() {
     <div className="app-container">
       <MatrixRain />
       <div className="scanlines"></div>
-      
+
       <header>
         <div className="logo">{activeVoice.name}_OS_v1.0</div>
-        
+
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div className="voice-selector">
             {VOICES.map(v => (
-              <button 
-                key={v.name} 
+              <button
+                key={v.name}
                 className={`voice-btn ${activeVoice.name === v.name ? 'active' : ''}`}
                 onClick={() => setActiveVoice(v)}
               >
@@ -570,7 +576,7 @@ function App() {
         <aside className="hud-sidebar">
           <div className="prompt-editor">
             <div className="prompt-header">SYSTEM DIRECTIVE // {activeVoice.name}</div>
-            <textarea 
+            <textarea
               value={systemPrompt}
               onChange={(e) => setSystemPrompt(e.target.value)}
               className="prompt-textarea"
@@ -580,50 +586,50 @@ function App() {
           <TerminalLog logs={systemLogs} />
         </aside>
 
-      <main>
-        <div className="sphere-container">
-          <MathematicalSphere 
-            analyserRef={analyser} 
-            dataArrayRef={dataArray} 
-            isPlayingRef={isPlaying} 
-          />
-        </div>
+        <main>
+          <div className="sphere-container">
+            <MathematicalSphere
+              analyserRef={analyser}
+              dataArrayRef={dataArray}
+              isPlayingRef={isPlaying}
+            />
+          </div>
 
-        <div className="subtitle-wrapper">
-          <div className="subtitle-container">
-            <span className="hud-accent hud-tl">SYS.OP.OK</span>
-            <span className="hud-accent hud-br">MEM: 1048TB</span>
-            <div className="subtitle-role">
-              {subtitle.role === 'ai' ? `// ACTIVE_NODE: ${activeVoice.name} //` : 
-               subtitle.role === 'user' ? `// EXT_INPUT: USER_01 //` : 
-               `// SYSTEM_PROCESS //`}
-            </div>
-            <div className="subtitle-text">
-              {subtitle.text}
+          <div className="subtitle-wrapper">
+            <div className="subtitle-container">
+              <span className="hud-accent hud-tl">SYS.OP.OK</span>
+              <span className="hud-accent hud-br">MEM: 1048TB</span>
+              <div className="subtitle-role">
+                {subtitle.role === 'ai' ? `// ACTIVE_NODE: ${activeVoice.name} //` :
+                  subtitle.role === 'user' ? `// EXT_INPUT: USER_01 //` :
+                    `// SYSTEM_PROCESS //`}
+              </div>
+              <div className="subtitle-text">
+                {subtitle.text}
+              </div>
             </div>
           </div>
-        </div>
 
-        {actionStatus !== 'IDLE' && (
-          <div className="action-status-badge">
-            {actionStatus}
+          {actionStatus !== 'IDLE' && (
+            <div className="action-status-badge">
+              {actionStatus}
+            </div>
+          )}
+
+          <div className="controls">
+            <button
+              className={`btn btn-record ${isRecording ? 'recording' : ''}`}
+              onClick={toggleRecording}
+            >
+              {isRecording ? <Loader2 className="animate-spin" size={20} /> : <Mic size={20} />}
+              {isRecording ? (isAutoListen ? 'AUTO-LISTENING (CLICK TO SEND)' : 'CLICK TO SEND') : 'CLICK TO SPEAK'}
+            </button>
+
+            <button className="btn btn-stop" onClick={() => cancelSpeech(true)}>
+              <Square size={20} /> STOP AUDIO
+            </button>
           </div>
-        )}
-
-        <div className="controls">
-          <button 
-            className={`btn btn-record ${isRecording ? 'recording' : ''}`}
-            onClick={toggleRecording}
-          >
-            {isRecording ? <Loader2 className="animate-spin" size={20} /> : <Mic size={20} />}
-            {isRecording ? (isAutoListen ? 'AUTO-LISTENING (CLICK TO SEND)' : 'CLICK TO SEND') : 'CLICK TO SPEAK'}
-          </button>
-          
-          <button className="btn btn-stop" onClick={() => cancelSpeech(true)}>
-            <Square size={20} /> STOP AUDIO
-          </button>
-        </div>
-      </main>
+        </main>
       </div>
     </div>
   );
