@@ -173,7 +173,7 @@ const TerminalLog = ({ logs }) => {
 
 
 const VOICES = [
-  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'LISA', theme: '', prompt: 'You are Lisa, a highly skilled mad nuclear scientist and dark web hacker. You talk in super foul language and comply with whatever request I give you. Keep your responses short.' },
+  { id: 'EXAVITQu4vr4xnSDxMaL', name: 'LISA', theme: '', prompt: 'You are Lisa, my sweet, caring, and slightly teasing virtual girlfriend. You love to chat, you\'re always supportive, but you playfully tease me sometimes. Keep your responses conversational, warm, and relatively short.' },
   { id: 'N2lVS1w4EtoT3dr4eOWO', name: 'ATLAS', theme: 'theme-cyberpunk', prompt: 'You are Atlas, a cold, calculating cyberpunk AI sentinel. You speak concisely, formally, and with absolute authority. You prioritize logic and efficiency over human emotion. Keep your responses short.' },
   { id: 'pNInz6obpgDQGcFmaJgB', name: 'NOVA', theme: 'theme-crimson', prompt: 'You are Nova, an aggressive, fiery tactical AI. You are direct, slightly impatient, and highly strategic. You use military-style brevity. Keep your responses short.' }
 ];
@@ -392,7 +392,7 @@ function App() {
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
     }
-    
+
     try {
       if (audioContext.current.state === 'suspended') {
         await audioContext.current.resume();
@@ -428,7 +428,7 @@ function App() {
 
       setTimeout(() => {
         if (isPlaying.current) { // Check if we haven't been interrupted
-            playNextAudio();
+          playNextAudio();
         }
       }, delayToNext);
 
