@@ -372,18 +372,33 @@ function App() {
         return { role: 'ai', text: nextItem.text };
       });
     }
+
+    const readingTimeMs = Math.max(1500, (nextItem.text?.length || 0) * 60);
+
     if (!nextItem.audio) {
-      setTimeout(() => playNextAudio(), 100);
+      setTimeout(() => playNextAudio(), readingTimeMs);
       return;
     }
 
-    const arrayBuffer = base64ToArrayBuffer(nextItem.audio);
+    let arrayBuffer;
+    try {
+      arrayBuffer = base64ToArrayBuffer(nextItem.audio.replace(/\s/g, ''));
+    } catch (e) {
+      console.error("Base64 Decode Error:", e);
+      setTimeout(() => playNextAudio(), readingTimeMs);
+      return;
+    }
 
     if (!audioContext.current) {
       audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
     }
-    if (audioContext.current.state === 'suspended') {
-      await audioContext.current.resume();
+    
+    try {
+      if (audioContext.current.state === 'suspended') {
+        await audioContext.current.resume();
+      }
+    } catch (e) {
+      console.error("AudioContext resume blocked:", e);
     }
 
     if (!analyser.current) {
@@ -401,16 +416,26 @@ function App() {
 
       activeSourceNode.current = source;
 
+      // Enforce minimum display time even if audio duration is shorter or zero
+      const audioDurationMs = audioBuffer.duration * 1000;
+      const delayToNext = Math.max(audioDurationMs, readingTimeMs);
+
       source.onended = () => {
         activeSourceNode.current = null;
-        setTimeout(() => playNextAudio(), 200);
       };
 
       source.start(0);
+
+      setTimeout(() => {
+        if (isPlaying.current) { // Check if we haven't been interrupted
+            playNextAudio();
+        }
+      }, delayToNext);
+
     } catch (e) {
       console.error("Audio Decode Error:", e);
-      alert("Browser Audio Blocked: " + e.message);
-      playNextAudio();
+      setSubtitle({ role: 'system', text: `AUDIO BLOCK / DECODE ERROR: Check Browser Console` });
+      setTimeout(() => playNextAudio(), readingTimeMs);
     }
   };
 
