@@ -1,0 +1,594 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;400;600&display=swap');
+
+:root {
+  --bg-dark: #000200;
+  --panel-bg: rgba(0, 10, 5, 0.4);
+  --panel-border: rgba(0, 250, 101, 0.15);
+  --primary: #00fa65;
+  --primary-glow: rgba(0, 250, 101, 0.3);
+  --text-main: #e0ffe8;
+  --text-muted: #6b9e7c;
+  --hud-line: rgba(0, 250, 101, 0.25);
+}
+
+body.theme-cyberpunk {
+  --bg-dark: #020005;
+  --panel-bg: rgba(5, 0, 10, 0.4);
+  --panel-border: rgba(0, 255, 255, 0.15);
+  --primary: #00ffff;
+  --primary-glow: rgba(0, 255, 255, 0.3);
+  --text-main: #e0ffff;
+  --text-muted: #6b8c9e;
+  --hud-line: rgba(0, 255, 255, 0.25);
+}
+body.theme-cyberpunk .btn-record.recording {
+  border-color: #ff00ff;
+  color: #ff00ff;
+  background: rgba(255, 0, 255, 0.05);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+}
+body.theme-cyberpunk .btn-record.recording::after {
+  background: #ff00ff;
+}
+
+body.theme-crimson {
+  --bg-dark: #050000;
+  --panel-bg: rgba(15, 0, 0, 0.4);
+  --panel-border: rgba(255, 50, 50, 0.15);
+  --primary: #ff3333;
+  --primary-glow: rgba(255, 50, 50, 0.3);
+  --text-main: #ffe0e0;
+  --text-muted: #9e6b6b;
+  --hud-line: rgba(255, 50, 50, 0.25);
+}
+body.theme-crimson .btn-record.recording {
+  border-color: #ff9900;
+  color: #ff9900;
+  background: rgba(255, 153, 0, 0.05);
+  box-shadow: 0 0 15px rgba(255, 153, 0, 0.3);
+}
+body.theme-crimson .btn-record.recording::after {
+  background: #ff9900;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* Background Canvas */
+.matrix-bg {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  opacity: 0.08;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+/* CRT Scanlines & Vignette */
+.scanlines {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%, 
+    rgba(0, 0, 0, 0.25) 50%
+  );
+  background-size: 100% 4px;
+  box-shadow: inset 0 0 100px rgba(0,0,0,0.9);
+}
+
+.app-container {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 10;
+}
+
+header {
+  padding: 2rem;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 4px;
+  color: var(--primary);
+  text-shadow: 0 0 15px var(--primary-glow);
+  position: relative;
+}
+
+.logo::after {
+  content: 'v2.1_ALPHA';
+  position: absolute;
+  top: -10px;
+  right: -60px;
+  font-size: 0.6rem;
+  color: var(--text-muted);
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-top: 1px solid var(--primary); 
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  backdrop-filter: blur(10px);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.voice-selector {
+  display: flex;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+.voice-btn {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  color: var(--text-muted);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+.voice-btn.active {
+  color: var(--bg-dark);
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 10px var(--primary-glow);
+}
+.voice-btn:hover:not(.active) {
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--primary);
+  box-shadow: 0 0 10px var(--primary);
+  animation: pulse-dot 1.5s infinite;
+}
+
+.status-dot.disconnected {
+  background: #ff003c;
+  box-shadow: 0 0 10px #ff003c;
+}
+
+@keyframes pulse-dot {
+  0% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; box-shadow: 0 0 20px var(--primary); transform: scale(1.2); }
+  100% { opacity: 0.2; transform: scale(0.8); }
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  position: relative;
+  padding: 1rem; 
+}
+
+/* Sphere Avatar Container */
+.sphere-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  aspect-ratio: 1 / 1; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+/* Decorative HUD crosshairs around sphere */
+.sphere-container::before, .sphere-container::after {
+  content: '';
+  position: absolute;
+  border: 1px solid var(--hud-line);
+  pointer-events: none;
+}
+.sphere-container::before {
+  top: 10%; bottom: 10%; left: 0; right: 0;
+  border-top: none; border-bottom: none;
+}
+.sphere-container::after {
+  top: 0; bottom: 0; left: 10%; right: 10%;
+  border-left: none; border-right: none;
+}
+
+.sphere-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; 
+}
+
+/* Subtitles */
+.subtitle-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin-bottom: 2rem;
+}
+
+/* HUD Corner Brackets */
+.subtitle-wrapper::before, .subtitle-wrapper::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--primary);
+  pointer-events: none;
+  z-index: 20;
+}
+.subtitle-wrapper::before {
+  top: -2px; left: -2px;
+  border-right: none; border-bottom: none;
+}
+.subtitle-wrapper::after {
+  bottom: -2px; right: -2px;
+  border-left: none; border-top: none;
+}
+
+.subtitle-container {
+  width: 100%;
+  min-height: 120px;
+  padding: 2rem;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(15px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  box-shadow: inset 0 0 20px rgba(0, 250, 101, 0.05), 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glitch Scanning Line */
+.subtitle-container::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--primary);
+  opacity: 0.5;
+  box-shadow: 0 0 10px var(--primary);
+  animation: scan 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scan {
+  0% { top: 0%; opacity: 0; }
+  10% { opacity: 0.5; }
+  90% { opacity: 0.5; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.hud-accent {
+  position: absolute;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--hud-line);
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+.hud-tl { top: 5px; left: 10px; }
+.hud-br { bottom: 5px; right: 10px; }
+
+.subtitle-role {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  text-shadow: 0 0 8px var(--primary-glow);
+}
+
+.subtitle-text {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  color: #fff;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+/* Controls */
+.action-status-badge {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--primary);
+  background: rgba(0, 250, 101, 0.05);
+  border: 1px solid var(--hud-line);
+  padding: 0.5rem 1rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  box-shadow: 0 0 10px rgba(0, 250, 101, 0.1);
+  display: inline-block;
+}
+
+.controls {
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+  z-index: 50;
+  pointer-events: auto;
+  margin-bottom: 3rem;
+  width: 100%;
+  max-width: 600px;
+  justify-content: center;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem 2rem;
+  border: 1px solid var(--primary);
+  background: rgba(0, 10, 5, 0.6);
+  color: var(--primary);
+  font-size: 0.9rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Share Tech Mono', monospace;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Angled corner effect */
+.btn::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  background: var(--primary);
+  opacity: 0.5;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+.btn:hover {
+  background: rgba(0, 250, 101, 0.1);
+  box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.btn-record {
+  flex: 2; 
+}
+
+.btn-record.recording {
+  border-color: #ff003c;
+  color: #ff003c;
+  background: rgba(255, 0, 60, 0.05);
+  box-shadow: 0 0 15px rgba(255, 0, 60, 0.3);
+}
+
+.btn-record.recording::after {
+  background: #ff003c;
+}
+
+.btn-stop {
+  flex: 1;
+  border-color: #555;
+  color: #aaa;
+}
+
+.btn-stop:hover {
+  border-color: #888;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: none;
+}
+.btn-stop::after {
+  background: #555;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+  }
+  
+  .logo::after {
+    right: -40px;
+    top: -5px;
+  }
+
+  .sphere-container {
+    max-width: 300px;
+    margin-bottom: 1.5rem;
+  }
+
+  .subtitle-container {
+    padding: 1.5rem;
+    min-height: 100px;
+  }
+
+  .subtitle-text {
+    font-size: 1.1rem;
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 1.25rem;
+  }
+  
+  .terminal-log-container {
+    display: none; /* Hide complex logs on small mobile screens */
+  }
+}
+
+/* Layout */
+.hud-layout {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  gap: 2rem;
+}
+
+.hud-sidebar {
+  flex: 0 0 350px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 3rem;
+  gap: 1rem;
+  pointer-events: none;
+}
+
+/* Prompt Editor */
+.prompt-editor {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-top: 2px solid var(--primary);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s;
+  pointer-events: auto;
+}
+.prompt-header {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--primary);
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--panel-border);
+  background: rgba(0, 0, 0, 0.3);
+  letter-spacing: 2px;
+}
+.prompt-textarea {
+  width: 100%;
+  height: 120px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  padding: 1rem;
+  resize: none;
+  outline: none;
+  line-height: 1.4;
+}
+.prompt-textarea:focus {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* Terminal Log Console */
+.terminal-log-container {
+  width: 100%;
+  height: 400px;
+  background: rgba(0, 5, 2, 0.7);
+  border: 1px solid var(--panel-border);
+  border-top: 2px solid var(--primary);
+  padding: 1rem;
+  overflow-y: auto;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--hud-line);
+  backdrop-filter: blur(5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+}
+
+.terminal-log-container::-webkit-scrollbar {
+  width: 5px;
+}
+.terminal-log-container::-webkit-scrollbar-thumb {
+  background: var(--primary);
+}
+
+.terminal-log-line {
+  margin-bottom: 0.25rem;
+  word-wrap: break-word;
+  animation: typeIn 0.1s ease-out;
+}
+.terminal-log-line .timestamp {
+  color: var(--text-muted);
+  margin-right: 0.5rem;
+}
+
+@keyframes typeIn {
+  from { opacity: 0; transform: translateX(-5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@media (max-width: 1100px) {
+  .hud-layout {
+    flex-direction: column-reverse;
+    padding: 0 1rem;
+  }
+  .hud-sidebar {
+    flex: none;
+    width: 100%;
+    padding-bottom: 1rem;
+  }
+  .terminal-log-container {
+    height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hud-sidebar {
+    display: none;
+  }
+}
