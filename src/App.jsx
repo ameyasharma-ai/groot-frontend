@@ -171,6 +171,44 @@ const TerminalLog = ({ logs }) => {
   );
 };
 
+const BootSequence = ({ onComplete }) => {
+  const [lines, setLines] = useState([]);
+  
+  useEffect(() => {
+    const bootLogs = [
+      "INITIATING KERNEL_OS...",
+      "LOADING NEURAL NETWORKS...",
+      "BYPASSING SECURITY PROTOCOLS...",
+      "ACCESSING MAINFRAME...",
+      "ESTABLISHING SECURE UPLINK...",
+      "SYSTEM ONLINE."
+    ];
+    let currentLine = 0;
+    
+    const interval = setInterval(() => {
+      if (currentLine < bootLogs.length) {
+        setLines(prev => [...prev, bootLogs[currentLine]]);
+        currentLine++;
+      } else {
+        clearInterval(interval);
+        setTimeout(onComplete, 800);
+      }
+    }, 300);
+    
+    return () => clearInterval(interval);
+  }, [onComplete]);
+
+  return (
+    <div className="boot-sequence-container">
+      <div className="boot-sequence-logs">
+        {lines.map((line, i) => (
+          <div key={i} className="boot-line">{line}</div>
+        ))}
+        <div className="boot-cursor">_</div>
+      </div>
+    </div>
+  );
+};
 
 const VOICES = [
   { id: 'EXAVITQu4vr4xnSDxMaL', name: 'LISA', theme: '', prompt: 'You are Lisa, my sweet, caring, and slightly teasing virtual girlfriend. You love to chat, you\'re always supportive, but you playfully tease me sometimes. Keep your responses conversational, warm, and relatively short.' },
@@ -179,6 +217,7 @@ const VOICES = [
 ];
 
 function App() {
+  const [isBooted, setIsBooted] = useState(false);
   const [wsStatus, setWsStatus] = useState('disconnected');
   const [isRecording, setIsRecording] = useState(false);
   const [isAutoListen, setIsAutoListen] = useState(false);
@@ -574,30 +613,44 @@ function App() {
       <MatrixRain />
       <div className="scanlines"></div>
 
-      <header>
-        <div className="logo">{activeVoice.name}_OS_v1.0</div>
+      {!isBooted ? (
+        <BootSequence onComplete={() => setIsBooted(true)} />
+      ) : (
+        <>
+          <header>
+            <div className="logo">{activeVoice.name}_OS_v1.0</div>
 
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="voice-selector">
-            {VOICES.map(v => (
-              <button
-                key={v.name}
-                className={`voice-btn ${activeVoice.name === v.name ? 'active' : ''}`}
-                onClick={() => setActiveVoice(v)}
-              >
-                {v.name}
-              </button>
-            ))}
-          </div>
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div className="voice-selector">
+                {VOICES.map(v => (
+                  <button
+                    key={v.name}
+                    className={`voice-btn ${activeVoice.name === v.name ? 'active' : ''}`}
+                    onClick={() => setActiveVoice(v)}
+                  >
+                    {v.name}
+                  </button>
+                ))}
+              </div>
 
-          <div className="status-badge">
-            <div className={`status-dot ${wsStatus === 'disconnected' ? 'disconnected' : ''}`}></div>
-            {wsStatus.toUpperCase()}
-          </div>
-        </div>
-      </header>
+              <div className="status-badge">
+                <div className={`status-dot ${wsStatus === 'disconnected' ? 'disconnected' : ''}`}></div>
+                {wsStatus.toUpperCase()}
+              </div>
+            </div>
+          </header>
 
-      <div className="hud-layout">
+          {wsStatus === 'disconnected' && (
+            <div className="backend-sleep-warning">
+              <div className="warning-header">[!] UPLINK SEVERED: CRYOSLEEP DETECTED [!]</div>
+              <div className="warning-body">
+                FREE-TIER HOST SERVER IS CURRENTLY HIBERNATING.<br/>
+                WAKE PROTOCOL INITIATED. STANDBY FOR CONNECTION (ETA: 30-60s)...
+              </div>
+            </div>
+          )}
+
+          <div className="hud-layout">
         <aside className="hud-sidebar">
           <div className="prompt-editor">
             <div className="prompt-header">SYSTEM DIRECTIVE // {activeVoice.name}</div>
@@ -656,6 +709,8 @@ function App() {
           </div>
         </main>
       </div>
+      </>
+      )}
     </div>
   );
 }
