@@ -1,16 +1,68 @@
-# React + Vite
+# 🧠 GROOT OS v2.1_ALPHA
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **Neural Interface AI Assistant**
 
-Currently, two official plugins are available:
+GROOT OS is a high-fidelity, voice-reactive AI interface designed with a focus on immersive aesthetics and low-latency interaction. It features multiple personality profiles, real-time 3D visualization, and a sophisticated HUD (Heads-Up Display) layout inspired by cyberpunk and sci-fi aesthetics.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## ✨ Core Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **🎭 Multi-Persona Integration**: Switch between three distinct AI personalities:
+  - **LISA**: Sweet, caring, and supportive companion.
+  - **ATLAS**: Cold, calculating cyberpunk AI sentinel.
+  - **NOVA**: Aggressive, direct tactical AI.
+- **🌐 Real-time Voice Interaction**: 
+  - Integrated **Wake Word** detection ("Hey Lisa").
+  - **VAD (Voice Activity Detection)** for hands-free auto-listening.
+  - Real-time **Streaming Speech-to-Text** and **Text-to-Speech**.
+- **🌀 3D Neural Visualization**: A custom-built **Mathematical Fibonacci Sphere** that reacts dynamically to the AI's voice frequency data.
+- **🖥️ Immersive UI/UX**:
+  - **Matrix Rain Background**: Subtle emerald digital cascade.
+  - **CRT Scanlines**: Authentic retro-tech visual filter.
+  - **Terminal Logs**: Real-time hacker-style system diagnostics.
+  - **Boot Sequence**: Cyberpunk-style kernel initialization on startup.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Framework**: [React 19](https://react.dev/) + [Vite](https://vitejs.dev/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **State Management**: React Hooks (Ref-heavy for low-latency audio handling)
+- **Communication**: WebSockets (Real-time duplex streaming)
+- **Visuals**: HTML5 Canvas (3D Math Sphere & Matrix Background)
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js (v18+)
+- npm / yarn
+
+### Installation
+1. Clone the repository.
+2. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+### ⚠️ Security Notice (Microphone Access)
+Mobile browsers require a **secure HTTPS connection** to access the microphone. For local testing on mobile devices, use an HTTPS tunnel like **Ngrok** or deploy to a secure host like **Vercel/Netlify**.
+
+## 🔧 Configuration
+
+The frontend looks for a WebSocket URL in the environment variables:
+`VITE_WS_URL=ws://your-backend-ip:8000/ws/chat`
+
+If not provided, it defaults to the current hostname on port 8000.
+
+---
+
+*Designed for the future of human-AI interaction.*
+
